@@ -4,10 +4,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { api } from "@/lib/api";
 
-// =========================================
-// COMITAR ESSE PASSO AQUI ANTEESSS
-// =========================================
-
 interface QueueEntry {
   id: string;
   position: number;
@@ -72,24 +68,30 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
     };
   }, [healthUnitId, userId, accessToken]);
 
-  const enterQueue = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { data } = await api.post<{ entry: QueueEntry; position: number }>(
-        `/queue/${healthUnitId}/enter`,
-        {},
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      );
-      setEntry(data.entry);
-      setPosition(data.position);
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message ?? "Erro ao entrar na fila");
-    } finally {
-      setLoading(false);
-    }
-  }, [healthUnitId, accessToken]);
+  const enterQueue = useCallback(
+    async (unitId: string) => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data } = await api.post<{
+          entry: QueueEntry;
+          position: number;
+        }>(
+          `/queue/${unitId}/enter`,
+          {},
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        );
+        setEntry(data.entry);
+        setPosition(data.position);
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } } };
+        setError(error.response?.data?.message ?? "Erro ao entrar na fila");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [accessToken],
+  );
 
   const leaveQueue = useCallback(async () => {
     if (!entry) return;
