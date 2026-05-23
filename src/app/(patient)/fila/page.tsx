@@ -19,23 +19,10 @@ import {
 
 export default function FilaPage() {
   const router = useRouter();
-  const { user, accessToken, loading: authLoading } = useAuth();
-  const [mounted, setMounted] = useState(false);
+  const { user, accessToken } = useAuth();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (authLoading) return;
-    if (!user || !accessToken) {
-      router.push("/login");
-    }
-  }, [mounted, authLoading, user, accessToken, router]);
 
   const { units, loading: loadingUnits } = useHealthUnits(city, state);
 
@@ -46,7 +33,6 @@ export default function FilaPage() {
       accessToken: accessToken ?? "",
     });
 
-  if (!mounted || authLoading) return null;
   if (!user || !accessToken) return null;
 
   if (entry) {

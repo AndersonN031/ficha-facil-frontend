@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
 import { User, LoginPayload, RegisterPayload } from "@/types/auth";
+import Cookies from "js-cookie";
 
 interface AuthContextData {
   user: User | null;
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await authService.login(payload);
       setUser(data.user);
       setAccessToken(data.accessToken);
-      sessionStorage.setItem("accessToken", data.accessToken);
+      Cookies.set("session", data.accessToken, { sameSite: "strict" });
       sessionStorage.setItem("user", JSON.stringify(data.user));
       router.push("/fila");
     },
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await authService.register(payload);
       setUser(data.user);
       setAccessToken(data.accessToken);
-      sessionStorage.setItem("accessToken", data.accessToken);
+      Cookies.set("session", data.accessToken, { sameSite: "strict" });
       sessionStorage.setItem("user", JSON.stringify(data.user));
       router.push("/fila");
     },
@@ -70,10 +71,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.logout();
     setUser(null);
     setAccessToken(null);
-    sessionStorage.removeItem("accessToken");
+    Cookies.remove("session");
     sessionStorage.removeItem("user");
     router.push("/login");
   }, [router]);
+
+  // no useEffect de restauração
+  useEffect(() => {
+    const storedToken = Cookies.get("session");
+    const storedUser = sessionStorage.getItem("user");
+
+    if (storedToken && storedUser) {
+      setAccessToken(storedToken);
+      setUser(JSON.parse(storedUser) as User);
+    }
+
+    setLoading(false);
+  }, []);
 
   return (
     <AuthContext.Provider
