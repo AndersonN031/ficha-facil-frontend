@@ -43,6 +43,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
 
     newSocket.on("connect", () => {
       newSocket.emit("join:unit", { healthUnitId });
+      console.log(newSocket);
     });
 
     newSocket.on("queue:update", (data: QueueUpdate) => {

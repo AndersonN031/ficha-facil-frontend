@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth.context";
 import { useHealthUnits } from "@/hooks/useHealthUnits";
 import { useQueue } from "@/hooks/useQueue";
@@ -17,10 +18,24 @@ import {
 } from "@/components/ui/card";
 
 export default function FilaPage() {
-  const { user, accessToken } = useAuth();
+  const router = useRouter();
+  const { user, accessToken, loading: authLoading } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (authLoading) return;
+    if (!user || !accessToken) {
+      router.push("/login");
+    }
+  }, [mounted, authLoading, user, accessToken, router]);
 
   const { units, loading: loadingUnits } = useHealthUnits(city, state);
 
@@ -31,6 +46,7 @@ export default function FilaPage() {
       accessToken: accessToken ?? "",
     });
 
+  if (!mounted || authLoading) return null;
   if (!user || !accessToken) return null;
 
   if (entry) {
@@ -87,7 +103,6 @@ export default function FilaPage() {
           </p>
         </div>
 
-        {/* filtros */}
         <div className="flex gap-3">
           <div className="flex-1 space-y-1">
             <Label htmlFor="city">Cidade</Label>
@@ -112,7 +127,6 @@ export default function FilaPage() {
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        {/* lista de postos */}
         {loadingUnits ? (
           <p className="text-sm text-muted-foreground">Carregando postos...</p>
         ) : units.length === 0 ? (
