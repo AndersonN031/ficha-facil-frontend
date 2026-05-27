@@ -1,4 +1,4 @@
-# FilaSaúde — Frontend
+# Ficha Fácil — Frontend
 
 Interface web do sistema de fila virtual para postos de saúde públicos. Permite que pacientes entrem na fila pelo celular, acompanhem sua posição em tempo real e recebam notificação quando forem chamados — sem precisar estar presencialmente no local.
 
@@ -7,8 +7,7 @@ Interface web do sistema de fila virtual para postos de saúde públicos. Permit
 ---
 
 ## O que é
-
-O frontend do FilaSaúde serve diferentes painéis de acordo com o papel do usuário:
+O frontend do Ficha Fácil é uma aplicação web construída com Next.js 14 que serve diferentes painéis de acordo com o papel do usuário:
 
 | Role              | Acesso                                                                        |
 | ----------------- | ----------------------------------------------------------------------------- |
@@ -36,13 +35,13 @@ O frontend do FilaSaúde serve diferentes painéis de acordo com o papel do usu�
 ### Pré-requisitos
 
 - Node.js 20+
-- API do FilaSaúde rodando em `http://localhost:3000`
+- API do Ficha Fácil rodando em `http://localhost:3000`
 
 ### Setup
 
 ```bash
-git clone https://github.com/seu-usuario/filasaude-web.git
-cd filasaude-web
+git clone https://github.com/seu-usuario/ficha-facil-frontend.git
+cd ficha-facil-frontend
 npm install
 cp .env.example .env.local
 npm run dev
