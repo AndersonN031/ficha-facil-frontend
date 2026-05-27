@@ -28,8 +28,21 @@ interface UseQueueProps {
 
 export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
   //   const [socket, setSocket] = useState<Socket | null>(null);
-  const [entry, setEntry] = useState<QueueEntry | null>(null);
-  const [position, setPosition] = useState<number | null>(null);
+
+  const [entry, setEntry] = useState<QueueEntry | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = sessionStorage.getItem("queueEntry");
+    return stored ? (JSON.parse(stored) as QueueEntry) : null;
+  });
+
+  const [position, setPosition] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = sessionStorage.getItem("queuePosition");
+    return stored ? Number(stored) : null;
+  });
+
+  // const [entry, setEntry] = useState<QueueEntry | null>(null);
+  // const [position, setPosition] = useState<number | null>(null);
   const [isCalled, setIsCalled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -84,6 +97,8 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
         );
         setEntry(data.entry);
         setPosition(data.position);
+        sessionStorage.setItem("queueEntry", JSON.stringify(data.entry));
+        sessionStorage.setItem("queuePosition", String(data.position));
       } catch (err: unknown) {
         const error = err as { response?: { data?: { message?: string } } };
         setError(error.response?.data?.message ?? "Erro ao entrar na fila");
@@ -105,6 +120,8 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
       setEntry(null);
       setPosition(null);
       setIsCalled(false);
+      sessionStorage.removeItem("queueEntry");
+      sessionStorage.removeItem("queuePosition");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message ?? "Erro ao cancelar");
