@@ -27,8 +27,6 @@ interface UseQueueProps {
 }
 
 export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
-  //   const [socket, setSocket] = useState<Socket | null>(null);
-
   const [entry, setEntry] = useState<QueueEntry | null>(() => {
     if (typeof window === "undefined") return null;
     const stored = sessionStorage.getItem("queueEntry");
@@ -41,8 +39,6 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
     return stored ? Number(stored) : null;
   });
 
-  // const [entry, setEntry] = useState<QueueEntry | null>(null);
-  // const [position, setPosition] = useState<number | null>(null);
   const [isCalled, setIsCalled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -50,37 +46,23 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io(process.env.NEXT_PUBLIC_API_URL!, {
-      auth: { token: accessToken },
-    });
+    if (!accessToken) return;
+    if (entry) return; 
 
-    newSocket.on("connect", () => {
-      newSocket.emit("join:unit", { healthUnitId });
-      console.log(newSocket);
-    });
-
-    newSocket.on("queue:update", (data: QueueUpdate) => {
-      const myEntry = data.entries.find((e) => e.userId === userId);
-      if (myEntry) {
-        setPosition(myEntry.position);
-      }
-    });
-    newSocket.on(
-      "ticket:called",
-      (data: { userId: string; message: string }) => {
-        if (data.userId === userId) {
-          setIsCalled(true);
+    void api
+      .get<QueueEntry & { position: number }>("/queue/my-entry", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .then((res) => {
+        if (res.data) {
+          setEntry(res.data);
+          setPosition(res.data.position);
+          sessionStorage.setItem("queueEntry", JSON.stringify(res.data));
+          sessionStorage.setItem("queuePosition", String(res.data.position));
         }
-      },
-    );
-
-    socketRef.current = newSocket;
-
-    return () => {
-      newSocket.emit("leave:unit", { healthUnitId });
-      newSocket.disconnect();
-    };
-  }, [healthUnitId, userId, accessToken]);
+      })
+      .catch(() => null);
+  }, [accessToken]);
 
   const enterQueue = useCallback(
     async (unitId: string) => {
