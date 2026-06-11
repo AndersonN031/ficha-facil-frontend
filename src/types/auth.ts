@@ -6,6 +6,7 @@ export interface User {
   phone: string | null;
   role: string;
   active: boolean;
+  healthUnitId: string | null;
   createdAt: string;
   updatedAt: string;
 }
