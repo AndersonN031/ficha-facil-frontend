@@ -26,21 +26,17 @@ export default function RecepcionistaPage() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || authLoading) return;
-    if (!user || !accessToken) {
-      router.push("/login");
-      return;
-    }
-    if (user.role !== "RECEPTIONIST") {
-      router.push("/login");
-    }
-  }, [mounted, authLoading, user, accessToken, router]);
+    setMounted(true);
+  }, []);
 
+  // só esse, remove o segundo que está duplicado
   useEffect(() => {
     if (!user?.healthUnitId || !accessToken) return;
 
     api
-      .get<Queue>(`/queue/${user.healthUnitId}`)
+      .get<Queue>(`/queue/${user.healthUnitId}/entries`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
       .then((res) => setQueue(res.data))
       .catch(() => null);
 
@@ -48,7 +44,7 @@ export default function RecepcionistaPage() {
       .getTodayTickets(accessToken)
       .then((data) => setTickets(data))
       .catch(() => null);
-  }, [user?.healthUnitId, accessToken]);
+  }, [user, accessToken]);
 
   useEffect(() => {
     if (!user?.healthUnitId || !accessToken) return;
