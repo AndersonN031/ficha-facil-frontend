@@ -43,6 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  const redirectByRole = (role: string) => {
+    const routes: Record<string, string> = {
+      PATIENT: "/fila",
+      RECEPTIONIST: "/recepcionista",
+      DOCTOR: "/medico",
+      ADMIN: "/admin",
+    };
+
+    router.push(routes[role] ?? "/fila");
+  };
+
   const login = useCallback(
     async (payload: LoginPayload) => {
       const data = await authService.login(payload);
@@ -50,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccessToken(data.accessToken);
       Cookies.set("session", data.accessToken, { sameSite: "strict" });
       sessionStorage.setItem("user", JSON.stringify(data.user));
-      router.push("/fila");
+      redirectByRole(data.user.role);
     },
     [router],
   );
@@ -62,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccessToken(data.accessToken);
       Cookies.set("session", data.accessToken, { sameSite: "strict" });
       sessionStorage.setItem("user", JSON.stringify(data.user));
-      router.push("/fila");
+      redirectByRole(data.user.role);
     },
     [router],
   );
@@ -76,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   }, [router]);
 
-  // no useEffect de restauração
+ 
   useEffect(() => {
     const storedToken = Cookies.get("session");
     const storedUser = sessionStorage.getItem("user");
