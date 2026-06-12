@@ -93,3 +93,5 @@ Para detalhes sobre arquitetura, hooks, contexto de auth e decisões técnicas c
 ## Autores
 
 Projeto desenvolvido como portfólio pessoal.
+
+Obs: Atualmente mergeando branchs na branch dev
