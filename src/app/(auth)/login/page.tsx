@@ -81,7 +81,7 @@ export default function LoginPage() {
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               Não tem conta?{" "}
-              <Link href="/cadastro" className="text-primary hover:underline">
+              <Link href="/register" className="text-primary hover:underline">
                 Cadastre-se
               </Link>
             </p>
