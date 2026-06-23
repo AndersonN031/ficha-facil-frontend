@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { api } from "@/lib/api";
 
@@ -10,16 +11,6 @@ interface QueueEntry {
   status: string;
 }
 
-interface QueueUpdate {
-  healthUnitId: string;
-  ticketCount: number;
-  entries: {
-    userId: string;
-    position: number;
-    status: string;
-  }[];
-}
-
 interface UseQueueProps {
   healthUnitId: string;
   userId: string;
@@ -27,6 +18,8 @@ interface UseQueueProps {
 }
 
 export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
+  const router = useRouter();
+
   const [entry, setEntry] = useState<QueueEntry | null>(() => {
     if (typeof window === "undefined") return null;
     const stored = sessionStorage.getItem("queueEntry");
@@ -45,9 +38,10 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
 
   const socketRef = useRef<Socket | null>(null);
 
+  // restaura entry do backend se não estiver no sessionStorage
   useEffect(() => {
     if (!accessToken) return;
-    if (entry) return; 
+    if (entry) return;
 
     void api
       .get<QueueEntry & { position: number }>("/queue/my-entry", {
@@ -63,6 +57,55 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
       })
       .catch(() => null);
   }, [accessToken]);
+
+  // Socket.io
+  useEffect(() => {
+    if (!accessToken || !healthUnitId) return;
+
+    const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
+      auth: { token: accessToken },
+    });
+
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      socket.emit("join:unit", { healthUnitId });
+    });
+
+    socket.on(
+      "queue:update",
+      (data: { entries: { userId: string; position: number }[] }) => {
+        const myEntry = data.entries.find((e) => e.userId === userId);
+        if (myEntry) {
+          setPosition(myEntry.position);
+          sessionStorage.setItem("queuePosition", String(myEntry.position));
+        }
+      },
+    );
+
+    socket.on("ticket:called", (data: { userId: string }) => {
+      if (data.userId === userId) {
+        setIsCalled(true);
+      }
+    });
+
+    socket.on("ticket:done", (data: { userId: string }) => {
+      if (data.userId === userId) {
+        setEntry(null);
+        setPosition(null);
+        setIsCalled(false);
+        sessionStorage.removeItem("queueEntry");
+        sessionStorage.removeItem("queuePosition");
+        router.push("/fila");
+      }
+    });
+
+    return () => {
+      socket.emit("leave:unit", { healthUnitId });
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [accessToken, healthUnitId, userId]);
 
   const enterQueue = useCallback(
     async (unitId: string) => {
