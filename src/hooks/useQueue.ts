@@ -32,7 +32,10 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
     return stored ? Number(stored) : null;
   });
 
-  const [isCalled, setIsCalled] = useState(false);
+  const [isCalled, setIsCalled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("isCalled") === "true";
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
