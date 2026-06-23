@@ -89,6 +89,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
     socket.on("ticket:called", (data: { userId: string }) => {
       if (data.userId === userId) {
         setIsCalled(true);
+        sessionStorage.setItem("isCalled", "true");
       }
     });
 
