@@ -100,6 +100,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
         setIsCalled(false);
         sessionStorage.removeItem("queueEntry");
         sessionStorage.removeItem("queuePosition");
+        sessionStorage.removeItem("isCalled");
         router.push("/fila");
       }
     });
@@ -151,6 +152,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
       setIsCalled(false);
       sessionStorage.removeItem("queueEntry");
       sessionStorage.removeItem("queuePosition");
+      sessionStorage.removeItem("isCalled");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message ?? "Erro ao cancelar");
