@@ -22,7 +22,10 @@ export default function FilaPage() {
   const { user, accessToken } = useAuth();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return sessionStorage.getItem("healthUnitId");
+  });
 
   const { units, loading: loadingUnits } = useHealthUnits(city, state);
 

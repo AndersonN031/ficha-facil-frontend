@@ -44,18 +44,36 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
   // restaura entry do backend se não estiver no sessionStorage
   useEffect(() => {
     if (!accessToken) return;
-    if (entry) return;
 
     void api
-      .get<QueueEntry & { position: number }>("/queue/my-entry", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
+      .get<QueueEntry & { position: number; status: string }>(
+        "/queue/my-entry",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      )
       .then((res) => {
         if (res.data) {
+          if (res.data.status === "DONE") {
+            setEntry(null);
+            setPosition(null);
+            setIsCalled(false);
+            sessionStorage.removeItem("queueEntry");
+            sessionStorage.removeItem("queuePosition");
+            sessionStorage.removeItem("isCalled");
+            router.push("/fila");
+            return;
+          }
+
           setEntry(res.data);
           setPosition(res.data.position);
           sessionStorage.setItem("queueEntry", JSON.stringify(res.data));
           sessionStorage.setItem("queuePosition", String(res.data.position));
+
+          if (res.data.status === "CALLED") {
+            setIsCalled(true);
+            sessionStorage.setItem("isCalled", "true");
+          }
         }
       })
       .catch(() => null);
@@ -129,6 +147,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
         setPosition(data.position);
         sessionStorage.setItem("queueEntry", JSON.stringify(data.entry));
         sessionStorage.setItem("queuePosition", String(data.position));
+        sessionStorage.setItem("healthUnitId", unitId);
       } catch (err: unknown) {
         const error = err as { response?: { data?: { message?: string } } };
         setError(error.response?.data?.message ?? "Erro ao entrar na fila");
@@ -153,6 +172,7 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
       sessionStorage.removeItem("queueEntry");
       sessionStorage.removeItem("queuePosition");
       sessionStorage.removeItem("isCalled");
+      sessionStorage.removeItem("healthUnitId");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message ?? "Erro ao cancelar");
