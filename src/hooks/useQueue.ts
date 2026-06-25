@@ -81,7 +81,6 @@ export function useQueue({ healthUnitId, userId, accessToken }: UseQueueProps) {
 
   // Socket.io
   useEffect(() => {
-    console.log("Socket useEffect rodou, healthUnitId:", healthUnitId);
     if (!accessToken || !healthUnitId) return;
 
     const socket = io(process.env.NEXT_PUBLIC_API_URL!, {
