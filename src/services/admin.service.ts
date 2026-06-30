@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { HealthUnit } from "@/types/healthUnit";
 import { User } from "@/types/user";
 
 export const adminService = {
@@ -17,6 +18,29 @@ export const adminService = {
     const { data } = await api.patch<User>(`/users/${userId}/manage`, payload, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+    return data;
+  },
+
+  async getHealthUnit(
+    unitId: string,
+    accessToken: string,
+  ): Promise<HealthUnit> {
+    const { data } = await api.get<HealthUnit>(`/health-units/${unitId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return data;
+  },
+
+  async updateHealthUnit(
+    unitId: string,
+    payload: HealthUnit,
+    accessToken: string,
+  ): Promise<HealthUnit> {
+    const { data } = await api.put<HealthUnit>(
+      `/health-units/${unitId}`,
+      payload,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
     return data;
   },
 };
