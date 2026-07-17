@@ -32,7 +32,6 @@ export const adminService = {
     return data;
   },
 
-  // dentro do objeto adminService:
   async getDailyReport(
     date: string,
     accessToken: string,
