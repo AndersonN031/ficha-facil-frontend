@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { HealthUnit } from "@/types/healthUnit";
+import { DailyReport } from "@/types/reports";
 import { User } from "@/types/user";
 
 export const adminService = {
@@ -26,6 +27,16 @@ export const adminService = {
     accessToken: string,
   ): Promise<HealthUnit> {
     const { data } = await api.get<HealthUnit>(`/health-units/${unitId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return data;
+  },
+
+  async getDailyReport(
+    date: string,
+    accessToken: string,
+  ): Promise<DailyReport> {
+    const { data } = await api.get<DailyReport>(`/reports/daily?date=${date}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return data;
